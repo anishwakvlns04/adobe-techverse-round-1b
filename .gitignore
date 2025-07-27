@@ -1,0 +1,33 @@
+# Ignore all file contents inside Collection folders
+Collection 1/*
+Collection 2/*
+Collection 3/*
+
+# Keep the folder structures
+!Collection 1/
+!Collection 2/
+!Collection 3/
+
+# Keep input JSONs (optional, remove if not needed)
+!Collection 1/challenge1b_input.json
+!Collection 2/challenge1b_input.json
+!Collection 3/challenge1b_input.json
+
+# Ignore generated outputs and PDFs
+Collection 1/challenge1b_output.json
+Collection 2/challenge1b_output.json
+Collection 3/challenge1b_output.json
+
+Collection 1/PDFs/
+Collection 2/PDFs/
+Collection 3/PDFs/
+
+# Ignore OS and Python generated files
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Ignore virtual environments
+.venv/
+venv/
