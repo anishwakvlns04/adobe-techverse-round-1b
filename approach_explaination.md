@@ -8,18 +8,21 @@ An intelligent system was developed to process document collections and extract 
 
 techverse_round_1b/
 │
-├── Collection_X/ # Input/output per test case
-│ ├── PDFs/ # Source documents
-│ ├── challenge1b_input.json # Persona, job, file list
-│ └── challenge1b_output.json # Final ranked results
+├── Collection_X/               # Input/output per test case  
+│   ├── PDFs/                   # Source documents  
+│   ├── challenge1b_input.json  # Persona, job, file list  
+│   └── challenge1b_output.json # Final ranked results  
 │
-├── schema/ # (Optional) output validation schema
-├── src/
-│ └── analyze_collections.py # Main pipeline logic
+├── schema/                     # (Optional) output validation schema  
+├── src/  
+│   └── analyze_collections.py  # Main pipeline logic  
 │
-├── requirements.txt # Dependencies
-├── Dockerfile # CPU-friendly container setup
-└── approach_explaination.md # This write-up
+├── requirements.txt            # Python dependencies  
+├── Dockerfile                  # CPU-only container setup  
+└── approach_explaination.md    # Methodology write-up  
+
+
+
 
 ## 🧠 Solution Design
 
