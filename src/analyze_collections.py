@@ -1,33 +1,6 @@
-#!/usr/bin/env python3
 """
 Adobe India Hackathon 2025 – Challenge 1B
-Persona‑Driven Multi‑Collection PDF Intelligence
 
-This script:
-  * Walks one or more Collection_* directories (or a single collection via CLI).
-  * Loads that collection's challenge1b_input.json (persona + job + docs list).
-  * Extracts text from PDFs (PyPDF2; offline, CPU‑safe).
-  * If Challenge 1A outline JSONs are available (auto‑detected), uses them to
-    anchor section extraction (title + page ranges) for much higher precision.
-  * Otherwise falls back to heuristic header/regex segmentation per page.
-  * Scores sections for persona/job relevance (keywords + TF‑IDF sim + heuristics).
-  * Returns top sections + representative sentences (subsections).
-  * Writes challenge1b_output.json in each collection directory.
-
-Env vars:
-  TECHVERSE_1A_OUTDIR      -> override path to directory of 1A outline JSONs
-  TECHVERSE_MAX_SECTIONS   -> int, default 10
-  TECHVERSE_MAX_SUBSECTS   -> int, default 3
-  TECHVERSE_DEBUG          -> '1' for verbose logging
-
-Constraints compliance:
-  * Offline: no network calls. NLTK downloads are NOT attempted at runtime.
-    Fallback tokenizers & stopwords included (tiny internal lists) if NLTK data missing.
-  * CPU only; pure Python + scikit‑learn (small TF‑IDF matrix).
-  * <1GB model; we train TF‑IDF per collection (lightweight).
-  * Performance: Works within 60s for ~3‑5 modest PDFs on CPU2GHz class hardware.
-
-Author: You :)
 """
 
 import json
@@ -53,18 +26,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# ------------------------------------------------------------------------------
 # Debug prints
-# ------------------------------------------------------------------------------
 DEBUG = os.getenv("TECHVERSE_DEBUG", "0") == "1"
 def dprint(*args, **kwargs):
     if DEBUG:
         print("[DEBUG]", *args, **kwargs)
 
 
-# ------------------------------------------------------------------------------
-# Offline-safe stopwords + tokenizers
-# ------------------------------------------------------------------------------
 
 # Minimal embedded English stopwords (fallback)
 _FALLBACK_STOPWORDS = {
@@ -121,11 +89,7 @@ def get_stopwords() -> set:
             pass
     return _FALLBACK_STOPWORDS.copy()
 
-
-# ------------------------------------------------------------------------------
 # 1A Outline Loading
-# ------------------------------------------------------------------------------
-
 def locate_1a_outline(pdf_stem: str, collection_dir: Path) -> Optional[Path]:
     """
     Attempt to locate the corresponding 1A outline JSON for a given PDF *stem*.
@@ -150,7 +114,6 @@ def locate_1a_outline(pdf_stem: str, collection_dir: Path) -> Optional[Path]:
         return p
 
     # Sibling Challenge_1A/output
-    # climb up from collection_dir until we see Challenge_1B or root
     cur = collection_dir
     for _ in range(4):
         if (cur / "Challenge_1A").exists():  # parent layout
@@ -172,9 +135,6 @@ def load_1a_outline(outline_path: Path) -> Optional[Dict[str, Any]]:
         return None
 
 
-# ------------------------------------------------------------------------------
-# PDF text extraction
-# ------------------------------------------------------------------------------
 
 def extract_pages_pdf(pdf_path: Path) -> List[str]:
     """
@@ -196,9 +156,8 @@ def extract_pages_pdf(pdf_path: Path) -> List[str]:
     return pages
 
 
-# ------------------------------------------------------------------------------
+
 # Heuristic section segmentation (fallback when no 1A outline)
-# ------------------------------------------------------------------------------
 
 # Patterns aggregated from your original script (reduced & generalized)
 _SECTION_PATTERNS = [
@@ -245,9 +204,6 @@ def segment_text_fallback(text: str) -> List[Tuple[str,str]]:
     return sections
 
 
-# ------------------------------------------------------------------------------
-# Section building using 1A outline
-# ------------------------------------------------------------------------------
 
 @dataclass
 class Section:
@@ -308,9 +264,7 @@ def build_sections_from_outline(pdf_stem: str,
     return combined
 
 
-# ------------------------------------------------------------------------------
-# Persona / Job keyword extraction
-# ------------------------------------------------------------------------------
+# Persona / Job keyword extraction------------------------------------------------------------------------
 
 # Domain lexicons (very small; extend if desired)
 TRAVEL_TERMS = {
@@ -345,9 +299,8 @@ def persona_job_keywords(persona: str, job: str) -> List[str]:
     return sorted(words)
 
 
-# ------------------------------------------------------------------------------
 # Text preprocessing
-# ------------------------------------------------------------------------------
+
 
 STOPWORDS = get_stopwords()
 
@@ -358,10 +311,7 @@ def preprocess(text: str) -> str:
     toks = [t for t in toks if t not in STOPWORDS]
     return " ".join(toks)
 
-
-# ------------------------------------------------------------------------------
 # Relevance Scoring
-# ------------------------------------------------------------------------------
 
 def score_section(sec_text: str,
                   persona: str,
@@ -402,9 +352,7 @@ def score_section(sec_text: str,
     return 0.6*sim + 0.3*kw_score + 0.1*length_score
 
 
-# ------------------------------------------------------------------------------
 # Subsection extraction (top sentences)
-# ------------------------------------------------------------------------------
 
 def pick_top_sentences(text: str, max_n: int = 3) -> List[str]:
     sents = tokenize_sentences(text)
@@ -425,9 +373,7 @@ def pick_top_sentences(text: str, max_n: int = 3) -> List[str]:
     return [s.strip() for _, s in scores[:max_n] if s.strip()]
 
 
-# ------------------------------------------------------------------------------
 # Collection Processing
-# ------------------------------------------------------------------------------
 
 def process_collection(collection_dir: Path,
                        persona: str,
@@ -597,9 +543,8 @@ def process_collection(collection_dir: Path,
     }
 
 
-# ------------------------------------------------------------------------------
+
 # Load collection input JSON
-# ------------------------------------------------------------------------------
 
 def load_collection_config(collection_dir: Path) -> Tuple[Dict[str,Any], List[str], str, str]:
     """
@@ -633,9 +578,8 @@ def load_collection_config(collection_dir: Path) -> Tuple[Dict[str,Any], List[st
     return challenge_info, pdf_filenames, persona_role, job_task
 
 
-# ------------------------------------------------------------------------------
 # Driver
-# ------------------------------------------------------------------------------
+
 
 def run_for_collection(collection_dir: Path,
                        max_sections: int,
