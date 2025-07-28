@@ -96,7 +96,7 @@ The system generates `challenge1b_output.json` in each `Collection_X/` folder. I
 
 ## 📄 Methodology
 
-The complete methodology, including segmentation logic, ranking heuristics, TF-IDF scoring, and fallback strategies, is explained in detail in the `approach_explaination.md` file provided in the `src/` directory.
+The complete methodology, including segmentation logic, ranking heuristics, TF-IDF scoring, and fallback strategies, is explained in detail in the `approach_explaination.md` file.
 
 ---
 
