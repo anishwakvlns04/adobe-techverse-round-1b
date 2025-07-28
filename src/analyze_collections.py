@@ -28,21 +28,85 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # Debug prints
 DEBUG = os.getenv("TECHVERSE_DEBUG", "0") == "1"
+
+
 def dprint(*args, **kwargs):
     if DEBUG:
         print("[DEBUG]", *args, **kwargs)
 
 
-
 # Minimal embedded English stopwords (fallback)
 _FALLBACK_STOPWORDS = {
-    "a","an","the","and","or","but","if","then","while","for","to","of","in","on",
-    "with","as","by","at","from","this","that","these","those","it","its","be",
-    "is","are","was","were","been","will","would","can","could","should","may",
-    "might","into","over","under","about","after","before","between","so","such",
-    "than","too","very","not","no","do","does","did","done","have","has","had",
-    "you","your","yours","we","our","ours","they","their","them"
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "but",
+    "if",
+    "then",
+    "while",
+    "for",
+    "to",
+    "of",
+    "in",
+    "on",
+    "with",
+    "as",
+    "by",
+    "at",
+    "from",
+    "this",
+    "that",
+    "these",
+    "those",
+    "it",
+    "its",
+    "be",
+    "is",
+    "are",
+    "was",
+    "were",
+    "been",
+    "will",
+    "would",
+    "can",
+    "could",
+    "should",
+    "may",
+    "might",
+    "into",
+    "over",
+    "under",
+    "about",
+    "after",
+    "before",
+    "between",
+    "so",
+    "such",
+    "than",
+    "too",
+    "very",
+    "not",
+    "no",
+    "do",
+    "does",
+    "did",
+    "done",
+    "have",
+    "has",
+    "had",
+    "you",
+    "your",
+    "yours",
+    "we",
+    "our",
+    "ours",
+    "they",
+    "their",
+    "them",
 }
+
 
 def _ensure_nltk_data():
     """
@@ -52,16 +116,18 @@ def _ensure_nltk_data():
     have_punkt = True
     have_sw = True
     try:
-        nltk.data.find('tokenizers/punkt')
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
         have_punkt = False
     try:
-        nltk.data.find('corpora/stopwords')
+        nltk.data.find("corpora/stopwords")
     except LookupError:
         have_sw = False
     return have_punkt, have_sw
 
+
 _HAVE_PUNKT, _HAVE_STOPWORDS = _ensure_nltk_data()
+
 
 def tokenize_sentences(text: str) -> List[str]:
     if _HAVE_PUNKT:
@@ -70,7 +136,8 @@ def tokenize_sentences(text: str) -> List[str]:
         except Exception:
             pass
     # fallback: split on .?! + newline
-    return [s.strip() for s in re.split(r'[.!?]\s+|\n{2,}', text) if s.strip()]
+    return [s.strip() for s in re.split(r"[.!?]\s+|\n{2,}", text) if s.strip()]
+
 
 def tokenize_words(text: str) -> List[str]:
     if _HAVE_PUNKT:
@@ -79,15 +146,17 @@ def tokenize_words(text: str) -> List[str]:
         except Exception:
             pass
     # fallback: simple split on non-letters
-    return [t for t in re.split(r'[^A-Za-z]+', text) if t]
+    return [t for t in re.split(r"[^A-Za-z]+", text) if t]
+
 
 def get_stopwords() -> set:
     if _HAVE_STOPWORDS:
         try:
-            return set(stopwords.words('english'))
+            return set(stopwords.words("english"))
         except Exception:
             pass
     return _FALLBACK_STOPWORDS.copy()
+
 
 # 1A Outline Loading
 def locate_1a_outline(pdf_stem: str, collection_dir: Path) -> Optional[Path]:
@@ -135,7 +204,6 @@ def load_1a_outline(outline_path: Path) -> Optional[Dict[str, Any]]:
         return None
 
 
-
 def extract_pages_pdf(pdf_path: Path) -> List[str]:
     """
     Extract text per page. Returns list index=page-1 -> text (str).
@@ -156,25 +224,26 @@ def extract_pages_pdf(pdf_path: Path) -> List[str]:
     return pages
 
 
-
 # Heuristic section segmentation (fallback when no 1A outline)
 
 # Patterns aggregated from your original script (reduced & generalized)
 _SECTION_PATTERNS = [
-    r'\n\s*(ABSTRACT|INTRODUCTION|METHODOLOGY|METHODS|RESULTS|DISCUSSION|CONCLUSION|REFERENCES)\s*\n',
-    r'\n\s*(ACCOMMODATION|HOTELS?|RESTAURANTS?|DINING|FOOD|ATTRACTIONS?|SIGHTS?|TRANSPORT(?:ATION)?|ACTIVITIES|ITINERARY|BUDGET|COST)\s*\n',
-    r'\n\s*(CREAT(?:E|ING)|FORMS?|FIELDS?|VALIDATION|WORKFLOW|TUTORIAL|GUIDE|STEP\s*\d+)\s*\n',
-    r'\n\s*(INGREDIENTS|PREPARATION|INSTRUCTIONS|DIRECTIONS|COOKING|SERV(?:E|ING)|NUTRITION|RECIPE|MENU)\s*\n',
-    r'\n\s*Chapter\s+\d+\s*\n',
-    r'\n\s*Section\s+\d+\s*\n',
-    r'\n\s*\d+\.?\s+[A-Z][^\n]{5,80}\n',  # numbered uppercase-ish header
-    r'\n\s*[A-Z][A-Z\s]{3,}\n',           # all caps line
+    r"\n\s*(ABSTRACT|INTRODUCTION|METHODOLOGY|METHODS|RESULTS|DISCUSSION|CONCLUSION|REFERENCES)\s*\n",
+    r"\n\s*(ACCOMMODATION|HOTELS?|RESTAURANTS?|DINING|FOOD|ATTRACTIONS?|SIGHTS?|TRANSPORT(?:ATION)?|ACTIVITIES|ITINERARY|BUDGET|COST)\s*\n",
+    r"\n\s*(CREAT(?:E|ING)|FORMS?|FIELDS?|VALIDATION|WORKFLOW|TUTORIAL|GUIDE|STEP\s*\d+)\s*\n",
+    r"\n\s*(INGREDIENTS|PREPARATION|INSTRUCTIONS|DIRECTIONS|COOKING|SERV(?:E|ING)|NUTRITION|RECIPE|MENU)\s*\n",
+    r"\n\s*Chapter\s+\d+\s*\n",
+    r"\n\s*Section\s+\d+\s*\n",
+    r"\n\s*\d+\.?\s+[A-Z][^\n]{5,80}\n",  # numbered uppercase-ish header
+    r"\n\s*[A-Z][A-Z\s]{3,}\n",  # all caps line
 ]
 
-_SECTION_REGEXES = [re.compile(p, re.IGNORECASE|re.MULTILINE) for p in _SECTION_PATTERNS]
+_SECTION_REGEXES = [
+    re.compile(p, re.IGNORECASE | re.MULTILINE) for p in _SECTION_PATTERNS
+]
 
 
-def segment_text_fallback(text: str) -> List[Tuple[str,str]]:
+def segment_text_fallback(text: str) -> List[Tuple[str, str]]:
     """
     Fallback segmenter. Returns list of (title, content).
     1. Try pattern boundaries.
@@ -186,10 +255,10 @@ def segment_text_fallback(text: str) -> List[Tuple[str,str]]:
             boundaries.append((m.start(), m.end(), m.group().strip()))
     boundaries.sort(key=lambda x: x[0])
 
-    sections: List[Tuple[str,str]] = []
+    sections: List[Tuple[str, str]] = []
     if not boundaries:
         # paragraph fallback
-        paras = [p.strip() for p in re.split(r'\n\s*\n+', text) if p.strip()]
+        paras = [p.strip() for p in re.split(r"\n\s*\n+", text) if p.strip()]
         for i, para in enumerate(paras, 1):
             if len(para) > 50:
                 sections.append((f"Section {i}", para))
@@ -197,12 +266,11 @@ def segment_text_fallback(text: str) -> List[Tuple[str,str]]:
 
     for i, (s, e, title) in enumerate(boundaries):
         start = e
-        end = boundaries[i+1][0] if i+1 < len(boundaries) else len(text)
+        end = boundaries[i + 1][0] if i + 1 < len(boundaries) else len(text)
         body = text[start:end].strip()
         if len(body) > 50:
             sections.append((title, body))
     return sections
-
 
 
 @dataclass
@@ -215,52 +283,60 @@ class Section:
     relevance: float = 0.0  # filled later
 
 
-def build_sections_from_outline(pdf_stem: str,
-                                pages: List[str],
-                                outline: Dict[str, Any]) -> List[Section]:
+def build_sections_from_outline(
+    pdf_stem: str, pages: List[str], outline: Dict[str, Any]
+) -> List[Section]:
     """
     Build sections by anchoring to 1A outline page numbers.
     Each heading starts a section from heading.page until (next.heading.page - 1).
-    If multiple headings on same page we'll still segment by heading order
-    but page range remains same; we don't slice page text by coordinates
-    (we don't have them) so all same-page headings share same content unless
-    we deduplicate titles (we dedupe later).
+    Page numbers are converted to 0-indexed to match internal logic.
+    If multiple headings are on the same page, content is shared unless deduped later.
     """
     items = outline.get("outline", [])
     if not items:
         return []
 
-    # sort by page (stable)
-    items_sorted = sorted(items, key=lambda h: (h.get("page", 1), h.get("level","H1")))
+    # Sort headings by page number and then by heading level
+    items_sorted = sorted(items, key=lambda h: (h.get("page", 1), h.get("level", "H1")))
+
     sections: List[Section] = []
+
     for idx, h in enumerate(items_sorted):
-        title = h.get("text","").strip() or f"Untitled {idx+1}"
-        start_pg = max(1, int(h.get("page", 1)))
-        # next heading page minus 1
+        title = h.get("text", "").strip() or f"Untitled {idx + 1}"
+
+        # Convert to 0-indexed page number
+        start_pg = max(0, int(h.get("page", 1)) - 1)
+
+        # Determine end page (exclusive of next heading's start page)
         if idx + 1 < len(items_sorted):
-            next_pg = max(1, int(items_sorted[idx+1].get("page", start_pg)))
+            next_pg = max(0, int(items_sorted[idx + 1].get("page", start_pg + 2)) - 1)
             end_pg = max(start_pg, next_pg - 1)
         else:
-            end_pg = len(pages)
-        # slice page texts
-        slice_txt = "\n".join(pages[start_pg-1:end_pg])  # pages are 0-index
-        sections.append(Section(
-            document=f"{pdf_stem}.pdf",
-            section_title=title,
-            start_page=start_pg,
-            end_page=end_pg,
-            content=slice_txt
-        ))
-    # optional dedupe: combine adjacent sections with tiny content
+            end_pg = len(pages) - 1  # Last page of document
+
+        # Extract the text from the selected page range (inclusive)
+        slice_txt = "\n".join(pages[start_pg : end_pg + 1])
+
+        sections.append(
+            Section(
+                document=f"{pdf_stem}.pdf",
+                section_title=title,
+                start_page=start_pg,
+                end_page=end_pg,
+                content=slice_txt,
+            )
+        )
+
+    # Optional deduplication: merge tiny sections into the previous one
     combined: List[Section] = []
     for sec in sections:
         if len(sec.content.strip()) < 40 and combined:
-            # merge into previous
             prev = combined[-1]
             prev.content += f"\n{sec.section_title}\n{sec.content}"
             prev.end_page = max(prev.end_page, sec.end_page)
         else:
             combined.append(sec)
+
     return combined
 
 
@@ -268,19 +344,79 @@ def build_sections_from_outline(pdf_stem: str,
 
 # Domain lexicons (very small; extend if desired)
 TRAVEL_TERMS = {
-    "travel","trip","hotel","accommodation","stay","hostel","airbnb","restaurant",
-    "food","dining","wine","beach","museum","tour","sightseeing","itinerary",
-    "transport","train","bus","car","rental","budget","book","booking","city","village"
+    "travel",
+    "trip",
+    "hotel",
+    "accommodation",
+    "stay",
+    "hostel",
+    "airbnb",
+    "restaurant",
+    "food",
+    "dining",
+    "wine",
+    "beach",
+    "museum",
+    "tour",
+    "sightseeing",
+    "itinerary",
+    "transport",
+    "train",
+    "bus",
+    "car",
+    "rental",
+    "budget",
+    "book",
+    "booking",
+    "city",
+    "village",
 }
 HR_ACROBAT_TERMS = {
-    "form","fillable","pdf","acrobat","onboarding","compliance","hr","employee",
-    "workflow","digital","signature","field","checkbox","dropdown","validation",
-    "template","automation","submit","approval"
+    "form",
+    "fillable",
+    "pdf",
+    "acrobat",
+    "onboarding",
+    "compliance",
+    "hr",
+    "employee",
+    "workflow",
+    "digital",
+    "signature",
+    "field",
+    "checkbox",
+    "dropdown",
+    "validation",
+    "template",
+    "automation",
+    "submit",
+    "approval",
 }
 FOOD_TERMS = {
-    "recipe","cook","cooking","vegetarian","vegan","buffet","menu","dish","ingredient",
-    "prep","preparation","bake","boil","saute","serve","serving","portion","dietary",
-    "nutrition","appetizer","main","dessert","soup","salad"
+    "recipe",
+    "cook",
+    "cooking",
+    "vegetarian",
+    "vegan",
+    "buffet",
+    "menu",
+    "dish",
+    "ingredient",
+    "prep",
+    "preparation",
+    "bake",
+    "boil",
+    "saute",
+    "serve",
+    "serving",
+    "portion",
+    "dietary",
+    "nutrition",
+    "appetizer",
+    "main",
+    "dessert",
+    "soup",
+    "salad",
 }
 
 
@@ -289,11 +425,19 @@ def persona_job_keywords(persona: str, job: str) -> List[str]:
     words = set(re.findall(r"[a-z]{3,}", txt))
 
     # domain expansion
-    if any(t in txt for t in ("travel","trip","tour","planner","vacation","itinerary")):
+    if any(
+        t in txt for t in ("travel", "trip", "tour", "planner", "vacation", "itinerary")
+    ):
         words |= TRAVEL_TERMS
-    if any(t in txt for t in ("hr","human","form","acrobat","pdf","employee","onboard")):
+    if any(
+        t in txt
+        for t in ("hr", "human", "form", "acrobat", "pdf", "employee", "onboard")
+    ):
         words |= HR_ACROBAT_TERMS
-    if any(t in txt for t in ("cook","recipe","menu","buffet","vegetarian","food","cater")):
+    if any(
+        t in txt
+        for t in ("cook", "recipe", "menu", "buffet", "vegetarian", "food", "cater")
+    ):
         words |= FOOD_TERMS
 
     return sorted(words)
@@ -306,19 +450,24 @@ STOPWORDS = get_stopwords()
 
 _WORD_RE = re.compile(r"[A-Za-z]{2,}")
 
+
 def preprocess(text: str) -> str:
     toks = [t.lower() for t in _WORD_RE.findall(text)]
     toks = [t for t in toks if t not in STOPWORDS]
     return " ".join(toks)
 
+
 # Relevance Scoring
 
-def score_section(sec_text: str,
-                  persona: str,
-                  job: str,
-                  kw_cache: Optional[List[str]]=None,
-                  tfidf_vectorizer: Optional[TfidfVectorizer]=None,
-                  query_vec=None) -> float:
+
+def score_section(
+    sec_text: str,
+    persona: str,
+    job: str,
+    kw_cache: Optional[List[str]] = None,
+    tfidf_vectorizer: Optional[TfidfVectorizer] = None,
+    query_vec=None,
+) -> float:
     """
     Combine:
       * TF-IDF cosine to persona+job query
@@ -349,10 +498,11 @@ def score_section(sec_text: str,
     length_score = min(len(sec_text) / 1500.0, 1.0)
 
     # Weighted sum (tune as needed)
-    return 0.6*sim + 0.3*kw_score + 0.1*length_score
+    return 0.6 * sim + 0.3 * kw_score + 0.1 * length_score
 
 
 # Subsection extraction (top sentences)
+
 
 def pick_top_sentences(text: str, max_n: int = 3) -> List[str]:
     sents = tokenize_sentences(text)
@@ -365,22 +515,31 @@ def pick_top_sentences(text: str, max_n: int = 3) -> List[str]:
     scores = []
     n = len(sents)
     for i, s in enumerate(sents):
-        pos = 1.0 if (i < 2 or i >= n-2) else 0.5
-        ln = min(len(s)/120.0, 1.0)
-        cue = 1.2 if re.search(r"\b(however|therefore|importantly|note|tip|steps?)\b", s, re.I) else 1.0
-        scores.append((pos*ln*cue, s))
+        pos = 1.0 if (i < 2 or i >= n - 2) else 0.5
+        ln = min(len(s) / 120.0, 1.0)
+        cue = (
+            1.2
+            if re.search(
+                r"\b(however|therefore|importantly|note|tip|steps?)\b", s, re.I
+            )
+            else 1.0
+        )
+        scores.append((pos * ln * cue, s))
     scores.sort(key=lambda x: x[0], reverse=True)
     return [s.strip() for _, s in scores[:max_n] if s.strip()]
 
 
 # Collection Processing
 
-def process_collection(collection_dir: Path,
-                       persona: str,
-                       job: str,
-                       pdf_filenames: Optional[List[str]]=None,
-                       max_sections: int = 10,
-                       max_subsects: int = 3) -> Dict[str, Any]:
+
+def process_collection(
+    collection_dir: Path,
+    persona: str,
+    job: str,
+    pdf_filenames: Optional[List[str]] = None,
+    max_sections: int = 10,
+    max_subsects: int = 3,
+) -> Dict[str, Any]:
     """
     Process all PDFs in a single collection directory.
     pdf_filenames: list from input JSON (recommended). If None, scan PDFs/.
@@ -398,7 +557,7 @@ def process_collection(collection_dir: Path,
 
     # Pre-build TF-IDF corpus from all doc text to produce consistent feature space.
     corpus_texts = []
-    doc_texts_by_stem: Dict[str,List[str]] = {}
+    doc_texts_by_stem: Dict[str, List[str]] = {}
 
     for p in existing:
         pages = extract_pages_pdf(p)
@@ -408,7 +567,7 @@ def process_collection(collection_dir: Path,
     # Fit vectorizer
     persona_job_txt = preprocess(f"{persona} {job}")
     corpus_for_fit = corpus_texts + [persona_job_txt]
-    tfidf = TfidfVectorizer(max_features=2000, ngram_range=(1,2))
+    tfidf = TfidfVectorizer(max_features=2000, ngram_range=(1, 2))
     try:
         matrix = tfidf.fit_transform(corpus_for_fit)
         query_vec = matrix[-1:]  # last row
@@ -430,37 +589,41 @@ def process_collection(collection_dir: Path,
         else:
             outline_obj = None
 
-
         secs = []
         if outline_obj:
             secs = build_sections_from_outline(p.stem, pages, outline_obj)
             if secs:
                 dprint(f"{p.name}: using {len(secs)} sections from 1A output.")
             else:
-                dprint(f"{p.name}: 1A outline exists but returned no sections, falling back to internal logic.")
+                dprint(
+                    f"{p.name}: 1A outline exists but returned no sections, falling back to internal logic."
+                )
 
         if not secs:
             dprint(f"{p.name}: using internal segmentation logic.")
             for i, txt in enumerate(pages, 1):
                 segs = segment_text_fallback(txt)
                 for title, body in segs:
-                    secs.append(Section(
-                        document=p.name,
-                        section_title=title,
-                        start_page=i,
-                        end_page=i,
-                        content=body
-                    ))
+                    secs.append(
+                        Section(
+                            document=p.name,
+                            section_title=title,
+                            start_page=i - 1,
+                            end_page=i - 1,
+                            content=body,
+                        )
+                    )
             if not secs:
                 # last fallback: whole doc
-                secs = [Section(
-                    document=p.name,
-                    section_title="Full Document",
-                    start_page=1,
-                    end_page=len(pages),
-                    content="\n".join(pages)
-                )]
-    
+                secs = [
+                    Section(
+                        document=p.name,
+                        section_title="Full Document",
+                        start_page=0,
+                        end_page=len(pages) - 1,
+                        content="\n".join(pages),
+                    )
+                ]
 
         if not secs:
             # fallback: run segmentation over concatenated page text or page by page?
@@ -469,22 +632,26 @@ def process_collection(collection_dir: Path,
             for i, txt in enumerate(pages, 1):
                 segs = segment_text_fallback(txt)
                 for title, body in segs:
-                    secs.append(Section(
-                        document=p.name,
-                        section_title=title,
-                        start_page=i,
-                        end_page=i,
-                        content=body
-                    ))
+                    secs.append(
+                        Section(
+                            document=p.name,
+                            section_title=title,
+                            start_page=i - 1,
+                            end_page=i - 1,
+                            content=body,
+                        )
+                    )
             if not secs:
                 # last fallback: treat whole doc as single section
-                secs = [Section(
-                    document=p.name,
-                    section_title="Full Document",
-                    start_page=1,
-                    end_page=len(pages),
-                    content="\n".join(pages)
-                )]
+                secs = [
+                    Section(
+                        document=p.name,
+                        section_title="Full Document",
+                        start_page=0,
+                        end_page=len(pages) - 1,
+                        content="\n".join(pages),
+                    )
+                ]
 
         # Score
         for s in secs:
@@ -508,24 +675,28 @@ def process_collection(collection_dir: Path,
     extracted_sections = []
     for rank, sec in enumerate(top, 1):
         # pick representative page to report: start_page (consistent)
-        extracted_sections.append({
-            "document": sec.document,
-            "section_title": sec.section_title,
-            "page_number": sec.start_page,
-            "importance_rank": rank
-        })
+        extracted_sections.append(
+            {
+                "document": sec.document,
+                "section_title": sec.section_title,
+                "page_number": max(0, sec.start_page),
+                "importance_rank": rank,
+            }
+        )
 
     # Subsection extraction
     subsection_analysis = []
     for rank, sec in enumerate(top, 1):
         subs = pick_top_sentences(sec.content, max_n=max_subsects)
         for j, sent in enumerate(subs, 1):
-            subsection_analysis.append({
-                "document": sec.document,
-                "subsection_id": f"sub_{rank}_{j}",
-                "refined_text": sent,
-                "page_number": sec.start_page
-            })
+            subsection_analysis.append(
+                {
+                    "document": sec.document,
+                    "subsection_id": f"sub_{rank}_{j}",
+                    "refined_text": sent,
+                    "page_number": max(0, sec.start_page),
+                }
+            )
 
     # Assemble metadata
     metadata = {
@@ -539,14 +710,16 @@ def process_collection(collection_dir: Path,
     return {
         "metadata": metadata,
         "extracted_sections": extracted_sections,
-        "subsection_analysis": subsection_analysis
+        "subsection_analysis": subsection_analysis,
     }
-
 
 
 # Load collection input JSON
 
-def load_collection_config(collection_dir: Path) -> Tuple[Dict[str,Any], List[str], str, str]:
+
+def load_collection_config(
+    collection_dir: Path,
+) -> Tuple[Dict[str, Any], List[str], str, str]:
     """
     Returns (challenge_info, pdf_filenames, persona_role, job_task).
     Missing fields -> safe defaults; pdf list may be derived from disk if absent.
@@ -581,14 +754,16 @@ def load_collection_config(collection_dir: Path) -> Tuple[Dict[str,Any], List[st
 # Driver
 
 
-def run_for_collection(collection_dir: Path,
-                       max_sections: int,
-                       max_subsects: int) -> Optional[Path]:
+def run_for_collection(
+    collection_dir: Path, max_sections: int, max_subsects: int
+) -> Optional[Path]:
     """
     Run pipeline for a single collection directory.
     Returns output path or None on failure.
     """
-    challenge_info, pdf_list, persona_role, job_task = load_collection_config(collection_dir)
+    challenge_info, pdf_list, persona_role, job_task = load_collection_config(
+        collection_dir
+    )
 
     t0 = time.time()
     try:
@@ -598,12 +773,16 @@ def run_for_collection(collection_dir: Path,
             job=job_task,
             pdf_filenames=pdf_list,
             max_sections=max_sections,
-            max_subsects=max_subsects
+            max_subsects=max_subsects,
         )
         elapsed = time.time() - t0
         result["metadata"]["processing_time_seconds"] = round(elapsed, 2)
-        result["metadata"]["challenge_id"] = challenge_info.get("challenge_id", "unknown")
-        result["metadata"]["test_case_name"] = challenge_info.get("test_case_name", "unknown")
+        result["metadata"]["challenge_id"] = challenge_info.get(
+            "challenge_id", "unknown"
+        )
+        result["metadata"]["test_case_name"] = challenge_info.get(
+            "test_case_name", "unknown"
+        )
 
     except Exception as e:
         dprint(f"Collection processing failed: {e}")
@@ -617,14 +796,16 @@ def run_for_collection(collection_dir: Path,
                 "error": str(e),
             },
             "extracted_sections": [],
-            "subsection_analysis": []
+            "subsection_analysis": [],
         }
 
     out_path = collection_dir / "challenge1b_output.json"
     try:
         with out_path.open("w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
-        print(f"[Collection] {collection_dir.name} -> {out_path.name} ({len(result['extracted_sections'])} sections).")
+        print(
+            f"[Collection] {collection_dir.name} -> {out_path.name} ({len(result['extracted_sections'])} sections)."
+        )
     except Exception as e:
         print(f"[Collection] Failed to write {out_path}: {e}")
         return None
@@ -633,6 +814,7 @@ def run_for_collection(collection_dir: Path,
 
 
 # ... (all your original imports and previous code remain the same)
+
 
 def scan_collections(root: Path) -> List[Path]:
     """
@@ -652,15 +834,32 @@ def scan_collections(root: Path) -> List[Path]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Challenge 1B Persona-Driven PDF Analyzer")
-    parser.add_argument("--collection", type=str,
-                        help="Name of a single collection directory to process (default: process all under root).")
-    parser.add_argument("--root", type=str, default=".",
-                        help="Root directory containing collection dirs (default: current working dir).")
-    parser.add_argument("--max-sections", type=int, default=int(os.getenv("TECHVERSE_MAX_SECTIONS", "10")),
-                        help="Max sections in extracted_sections.")
-    parser.add_argument("--max-subsects", type=int, default=int(os.getenv("TECHVERSE_MAX_SUBSECTS", "3")),
-                        help="Max sentences per section in subsection_analysis.")
+    parser = argparse.ArgumentParser(
+        description="Challenge 1B Persona-Driven PDF Analyzer"
+    )
+    parser.add_argument(
+        "--collection",
+        type=str,
+        help="Name of a single collection directory to process (default: process all under root).",
+    )
+    parser.add_argument(
+        "--root",
+        type=str,
+        default=".",
+        help="Root directory containing collection dirs (default: current working dir).",
+    )
+    parser.add_argument(
+        "--max-sections",
+        type=int,
+        default=int(os.getenv("TECHVERSE_MAX_SECTIONS", "10")),
+        help="Max sections in extracted_sections.",
+    )
+    parser.add_argument(
+        "--max-subsects",
+        type=int,
+        default=int(os.getenv("TECHVERSE_MAX_SUBSECTS", "3")),
+        help="Max sentences per section in subsection_analysis.",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -681,7 +880,7 @@ def main():
         run_for_collection(
             collection_dir=c,
             max_sections=args.max_sections,
-            max_subsects=args.max_subsects
+            max_subsects=args.max_subsects,
         )
 
 

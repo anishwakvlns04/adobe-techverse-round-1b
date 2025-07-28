@@ -1,33 +1,19 @@
-# Ignore all file contents inside Collection folders
-Collection 1/*
-Collection 2/*
-Collection 3/*
+# Ignore all collection folders by default
+Collection 2/
+Collection 3/
 
-# Keep the folder structures
+# Allow everything inside Collection 1
 !Collection 1/
-!Collection 2/
-!Collection 3/
 
-# Keep input JSONs (optional, remove if not needed)
-!Collection 1/challenge1b_input.json
-!Collection 2/challenge1b_input.json
-!Collection 3/challenge1b_input.json
-
-# Ignore generated outputs and PDFs
+# Inside Collection 1, ignore the output JSON if you don’t want to track it
 Collection 1/challenge1b_output.json
-Collection 2/challenge1b_output.json
-Collection 3/challenge1b_output.json
 
-Collection 1/PDFs/
-Collection 2/PDFs/
-Collection 3/PDFs/
-
-# Ignore OS and Python generated files
+# OS and Python generated files
 __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
 
-# Ignore virtual environments
+# Virtual environments
 .venv/
 venv/
